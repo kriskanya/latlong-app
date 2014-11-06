@@ -1,30 +1,30 @@
 function Map(locations) {
-    this.locations = locations;
+  this.locations = locations;
 }
 
 Array.prototype.chunk = function(chunkSize) {
-    var array = [];
-    for (var i = 0; i < this.length; i+=chunkSize)
-        array.push(this.slice(i, i+chunkSize));
-    return array;
+  var array = [];
+  for (var i = 0; i < this.length; i+=chunkSize)
+    array.push(this.slice(i, i+chunkSize));
+  return array;
 };
 
 function createUsableArray(array) {
-    var splitArray = array.split(', ');
-    var cityName;
-    var newArray = [];
+  var splitArray = array.split(', ');
+  var cityName;
+  var newArray = [];
 
-    for (var i = 0; i < splitArray.length; i++) {
-        if (i % 4 === 0) {
-            cityName = splitArray[i] + ', ' + (splitArray[i+1]);
-            cityName = cityName.slice(1,-1);
-            newArray.push(cityName);
-        } else if (splitArray[i].search((/[A-Z][A-Z]/))) {
-            newArray.push(parseFloat(splitArray[i]));
-        }
+  for (var i = 0; i < splitArray.length; i++) {
+    if (i % 4 === 0) {
+        cityName = splitArray[i] + ', ' + (splitArray[i+1]);
+        cityName = cityName.slice(1,-1);
+        newArray.push(cityName);
+    } else if (splitArray[i].search((/[A-Z][A-Z]/))) {
+        newArray.push(parseFloat(splitArray[i]));
     }
-    newArray = newArray.chunk(3);
-    return newArray;
+  }
+  newArray = newArray.chunk(3);
+  return newArray;
 }
 
 Map.prototype.createDirectionArray = function(direction) {
@@ -59,21 +59,50 @@ Map.prototype.createDirectionArray = function(direction) {
 }
 
 Map.prototype.northernmost = function() {
-    return this.createDirectionArray("north");
+  return this.createDirectionArray("north");
 };
 
 Map.prototype.southernnmost = function() {
-    return this.createDirectionArray("south");
+  return this.createDirectionArray("south");
 };
 
 Map.prototype.easternnmost = function() {
-    return this.createDirectionArray("east");
+  return this.createDirectionArray("east");
 };
 
 Map.prototype.westernmost = function() {
-    return this.createDirectionArray("west");
+  return this.createDirectionArray("west");
 };
 
+Map.prototype.findClosestCity = function(lat, long) {
+  var cleanArray = createUsableArray(this.locations);
+
+  var diffArray = [];
+  var latDifference;
+  var longDifference;
+  // Add together the differences between the user inputs and the
+  // lats and longs, and push them into an array
+  for (var i = 0; i < cleanArray.length; i++) {
+    latDifference = Math.abs(cleanArray[i][1] - lat);
+    longDifference = Math.abs(cleanArray[i][2] - long);
+    diffArray.push(latDifference + longDifference);
+  }
+
+  // Compare the total values of the lats and longs and find the index
+  var index = 0;
+  var value = diffArray[0];
+  for (var i = 1; i < diffArray.length; i++) {
+    if (diffArray[i] < value) {
+      value = diffArray[i];
+      index = i;
+    }
+  }
+  return cleanArray[index];
+};
+
+
+
+/* -------Test the methods------- */
 
 loc1 = '"Nashville, TN", 36.17, -86.78, "New York, NY", 40.71, -74.00, "Atlanta, GA", 33.75, -84.39, "Denver, CO", 39.74, -104.98, "Seattle, WA", 47.61, -122.33, "Los Angeles, CA", 34.05, -118.24, "Memphis, TN", 35.15, -90.05';
 
@@ -81,18 +110,22 @@ loc1 = '"Nashville, TN", 36.17, -86.78, "New York, NY", 40.71, -74.00, "Atlanta,
 var newObj = new Map(loc1);
 console.log('---');
 
-var north = newObj.northernmost();
-console.log('northernmost place on the list');
-console.log(north);
+// var north = newObj.northernmost();
+// console.log('northernmost place on the list');
+// console.log(north);
+//
+// var south = newObj.southernnmost();
+// console.log('southernmost place on the list');
+// console.log(south);
+//
+// var east = newObj.easternnmost();
+// console.log('easternmost place on the list');
+// console.log(east);
+//
+// var west = newObj.westernmost();
+// console.log('westernmost place on the list');
+// console.log(west);
 
-var south = newObj.southernnmost();
-console.log('southernmost place on the list');
-console.log(south);
-
-var east = newObj.easternnmost();
-console.log('easternmost place on the list');
-console.log(east);
-
-var west = newObj.westernmost();
-console.log('westernmost place on the list');
-console.log(west);
+var closest = newObj.findClosestCity(36, -84);
+console.log('closest city');
+console.log(closest);
